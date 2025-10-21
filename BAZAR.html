@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kasir Bazaar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Animasi sederhana untuk item baru */
+        .new-item-animation {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar</h1>
+            <p class="text-slate-600 mt-2">Divisi Dana dan Usaha</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- Kolom Input Pesanan -->
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+                <h2 class="text-2xl font-semibold mb-6 border-b pb-3">Tambah Pesanan Baru</h2>
+                <form id="order-form" class="space-y-4">
+                    <div>
+                        <label for="customer-name" class="block text-sm font-medium text-slate-700">Nama Pemesan</label>
+                        <input type="text" id="customer-name" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Contoh: Budi" required>
+                    </div>
+                    <div>
+                        <label for="menu-name" class="block text-sm font-medium text-slate-700">Nama Menu</label>
+                        <input type="text" id="menu-name" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Contoh: Nasi Goreng" required>
+                    </div>
+                    <div>
+                        <label for="menu-price" class="block text-sm font-medium text-slate-700">Harga Menu (Rp)</label>
+                        <input type="number" id="menu-price" min="0" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Contoh: 15000" required>
+                    </div>
+                    <div>
+                        <label for="menu-quantity" class="block text-sm font-medium text-slate-700">Kuantitas</label>
+                        <input type="number" id="menu-quantity" value="1" min="1" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
+                    </div>
+                    <div>
+                        <label for="payment-method" class="block text-sm font-medium text-slate-700">Metode Pembayaran</label>
+                        <select id="payment-method" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                            <option>Cash</option>
+                            <option>Transfer</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                        Tambah Pesanan
+                    </button>
+                </form>
+            </div>
+
+            <!-- Kolom Daftar Pesanan dan Laporan -->
+            <div class="lg:col-span-3">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4">Daftar Pesanan</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No.</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pemesan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Detail Pesanan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-list" class="bg-white divide-y divide-slate-200">
+                                <!-- Data pesanan akan muncul di sini -->
+                                <tr id="empty-state">
+                                    <td colspan="6" class="px-4 py-8 text-center text-slate-500">Belum ada pesanan yang masuk.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
+                    <h2 class="text-2xl font-semibold mb-4">Laporan Singkat</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-sky-100 p-4 rounded-lg">
+                            <p class="text-sm text-sky-800">Total Pesanan</p>
+                            <p id="total-orders" class="text-2xl font-bold text-sky-900">0</p>
+                        </div>
+                        <div class="bg-emerald-100 p-4 rounded-lg">
+                            <p class="text-sm text-emerald-800">Total Pemasukan</p>
+                            <p id="total-revenue" class="text-2xl font-bold text-emerald-900">Rp 0</p>
+                        </div>
+                    </div>
+                     <div class="mt-6">
+                        <button id="export-csv" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                            <span>Export Laporan ke Excel (CSV)</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const orderForm = document.getElementById('order-form');
+            const orderList = document.getElementById('order-list');
+            const totalOrdersEl = document.getElementById('total-orders');
+            const totalRevenueEl = document.getElementById('total-revenue');
+            const exportCsvBtn = document.getElementById('export-csv');
+            const emptyState = document.getElementById('empty-state');
+
+            let orders = [];
+            let orderCounter = 1;
+
+            orderForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+
+                const customerName = document.getElementById('customer-name').value;
+                const menuName = document.getElementById('menu-name').value;
+                const menuPrice = parseFloat(document.getElementById('menu-price').value);
+                const menuQuantity = parseInt(document.getElementById('menu-quantity').value);
+                const paymentMethod = document.getElementById('payment-method').value;
+
+                const newOrder = {
+                    id: Date.now(),
+                    orderNumber: orderCounter++,
+                    customerName,
+                    menuName,
+                    menuPrice,
+                    menuQuantity,
+                    total: menuPrice * menuQuantity,
+                    paymentMethod,
+                    status: 'Diproses' // Status awal
+                };
+
+                orders.push(newOrder);
+                renderOrders();
+                orderForm.reset();
+                 document.getElementById('menu-quantity').value = 1; // Reset kuantitas ke 1
+            });
+
+            function renderOrders() {
+                orderList.innerHTML = ''; // Kosongkan daftar
+
+                if (orders.length === 0) {
+                     orderList.appendChild(emptyState);
+                } else {
+                    orders.forEach(order => {
+                        const row = document.createElement('tr');
+                        row.className = 'new-item-animation';
+                        row.innerHTML = `
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900">${order.orderNumber}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700">${order.customerName}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">
+                                <div class="font-medium text-slate-800">${order.menuName}</div>
+                                <div>${order.menuQuantity} x ${formatRupiah(order.menuPrice)}</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900">${formatRupiah(order.total)} <span class="text-xs font-normal text-slate-500">(${order.paymentMethod})</span></td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                <button data-id="${order.id}" class="toggle-status-btn px-2 py-1 text-xs font-semibold rounded-full ${order.status === 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                    ${order.status}
+                                </button>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                <button data-id="${order.id}" class="delete-btn text-red-500 hover:text-red-700">Hapus</button>
+                            </td>
+                        `;
+                        orderList.appendChild(row);
+                    });
+                }
+                updateSummary();
+            }
+
+            orderList.addEventListener('click', (e) => {
+                const id = e.target.dataset.id;
+                if (!id) return;
+
+                if (e.target.classList.contains('toggle-status-btn')) {
+                    const order = orders.find(o => o.id == id);
+                    order.status = order.status === 'Diproses' ? 'Selesai' : 'Diproses';
+                }
+
+                if (e.target.classList.contains('delete-btn')) {
+                    orders = orders.filter(o => o.id != id);
+                }
+                
+                renderOrders();
+            });
+
+            function updateSummary() {
+                totalOrdersEl.textContent = orders.length;
+                const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+                totalRevenueEl.textContent = formatRupiah(totalRevenue);
+            }
+
+            function formatRupiah(amount) {
+                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+            }
+
+            exportCsvBtn.addEventListener('click', () => {
+                if (orders.length === 0) {
+                    alert('Tidak ada data pesanan untuk di-export.');
+                    return;
+                }
+
+                const headers = [
+                    'No Pesanan',
+                    'Nama Pemesan',
+                    'Nama Menu',
+                    'Harga Satuan',
+                    'Kuantitas',
+                    'Total Harga',
+                    'Metode Pembayaran',
+                    'Status Pesanan'
+                ];
+
+                const rows = orders.map(order => [
+                    order.orderNumber,
+                    order.customerName,
+                    order.menuName,
+                    order.menuPrice,
+                    order.menuQuantity,
+                    order.total,
+                    order.paymentMethod,
+                    order.status
+                ]);
+
+                let csvContent = "data:text/csv;charset=utf-8," 
+                    + headers.join(",") + "\n" 
+                    + rows.map(e => e.join(",")).join("\n");
+                
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement("a");
+                link.setAttribute("href", encodedUri);
+                
+                const now = new Date();
+                const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+                link.setAttribute("download", `laporan_bazaar_${timestamp}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            });
+            
+            // Render awal untuk menampilkan empty state
+            renderOrders();
+        });
+    </script>
+</body>
+</html>
