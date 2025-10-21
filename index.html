@@ -10,7 +10,6 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Animasi sederhana untuk item baru */
         .new-item-animation {
             animation: fadeIn 0.5s ease-in-out;
         }
@@ -30,7 +29,7 @@
 
         <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
             <!-- Kolom Input Pesanan -->
-            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg">
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg self-start">
                 <h2 class="text-2xl font-semibold mb-6 border-b pb-3">Tambah Pesanan Baru</h2>
                 <form id="order-form" class="space-y-4">
                     <div>
@@ -56,6 +55,14 @@
                             <option>Transfer</option>
                         </select>
                     </div>
+                     <!-- TAMBAHAN BARU: Status Pembayaran -->
+                    <div>
+                        <label for="payment-status" class="block text-sm font-medium text-slate-700">Status Pembayaran</label>
+                        <select id="payment-status" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                            <option>Belum Bayar</option>
+                            <option>Lunas</option>
+                        </select>
+                    </div>
                     <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md">
                         Tambah Pesanan
                     </button>
@@ -74,14 +81,14 @@
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pemesan</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Detail Pesanan</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pembayaran</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody id="order-list" class="bg-white divide-y divide-slate-200">
-                                <!-- Data pesanan akan muncul di sini -->
                                 <tr id="empty-state">
-                                    <td colspan="6" class="px-4 py-8 text-center text-slate-500">Belum ada pesanan yang masuk.</td>
+                                    <td colspan="7" class="px-4 py-8 text-center text-slate-500">Belum ada pesanan yang masuk.</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -89,28 +96,42 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
-                    <h2 class="text-2xl font-semibold mb-4">Laporan Singkat</h2>
+                    <h2 class="text-2xl font-semibold mb-4">Laporan & Aksi</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div class="bg-sky-100 p-4 rounded-lg">
                             <p class="text-sm text-sky-800">Total Pesanan</p>
                             <p id="total-orders" class="text-2xl font-bold text-sky-900">0</p>
                         </div>
                         <div class="bg-emerald-100 p-4 rounded-lg">
-                            <p class="text-sm text-emerald-800">Total Pemasukan</p>
+                            <p class="text-sm text-emerald-800">Total Pemasukan (Lunas)</p>
                             <p id="total-revenue" class="text-2xl font-bold text-emerald-900">Rp 0</p>
                         </div>
                     </div>
-                     <div class="mt-6">
+                     <div class="mt-6 space-y-3">
                         <button id="export-csv" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center space-x-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
-                            </svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                             <span>Export Laporan ke Excel (CSV)</span>
+                        </button>
+                        <button id="reset-data" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            <span>Reset Semua Data</span>
                         </button>
                     </div>
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal Konfirmasi Reset -->
+    <div id="reset-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center w-11/12 max-w-sm">
+            <h3 class="text-xl font-bold mb-4">Anda Yakin?</h3>
+            <p class="text-sm text-slate-600 mb-6">Semua data pesanan yang tersimpan akan dihapus secara permanen.</p>
+            <div class="flex justify-center gap-4">
+                <button id="cancel-reset" class="px-6 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg transition-colors">Batal</button>
+                <button id="confirm-reset" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">Ya, Hapus</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -120,47 +141,54 @@
             const totalOrdersEl = document.getElementById('total-orders');
             const totalRevenueEl = document.getElementById('total-revenue');
             const exportCsvBtn = document.getElementById('export-csv');
-            const emptyState = document.getElementById('empty-state');
+            const resetDataBtn = document.getElementById('reset-data');
+            const resetModal = document.getElementById('reset-modal');
+            const cancelResetBtn = document.getElementById('cancel-reset');
+            const confirmResetBtn = document.getElementById('confirm-reset');
 
-            let orders = [];
-            let orderCounter = 1;
+            let orders = JSON.parse(localStorage.getItem('bazaarOrders')) || [];
+            let orderCounter = parseInt(localStorage.getItem('bazaarOrderCounter')) || 1;
+
+            function saveData() {
+                localStorage.setItem('bazaarOrders', JSON.stringify(orders));
+                localStorage.setItem('bazaarOrderCounter', orderCounter);
+            }
 
             orderForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-
-                const customerName = document.getElementById('customer-name').value;
-                const menuName = document.getElementById('menu-name').value;
-                const menuPrice = parseFloat(document.getElementById('menu-price').value);
-                const menuQuantity = parseInt(document.getElementById('menu-quantity').value);
-                const paymentMethod = document.getElementById('payment-method').value;
-
                 const newOrder = {
                     id: Date.now(),
                     orderNumber: orderCounter++,
-                    customerName,
-                    menuName,
-                    menuPrice,
-                    menuQuantity,
-                    total: menuPrice * menuQuantity,
-                    paymentMethod,
-                    status: 'Diproses' // Status awal
+                    customerName: document.getElementById('customer-name').value,
+                    menuName: document.getElementById('menu-name').value,
+                    menuPrice: parseFloat(document.getElementById('menu-price').value),
+                    menuQuantity: parseInt(document.getElementById('menu-quantity').value),
+                    total: parseFloat(document.getElementById('menu-price').value) * parseInt(document.getElementById('menu-quantity').value),
+                    paymentMethod: document.getElementById('payment-method').value,
+                    paymentStatus: document.getElementById('payment-status').value, // Mengambil status pembayaran
+                    orderStatus: 'Diproses'
                 };
-
                 orders.push(newOrder);
+                saveData();
                 renderOrders();
                 orderForm.reset();
-                 document.getElementById('menu-quantity').value = 1; // Reset kuantitas ke 1
+                document.getElementById('menu-quantity').value = 1;
             });
 
             function renderOrders() {
-                orderList.innerHTML = ''; // Kosongkan daftar
-
+                orderList.innerHTML = ''; 
                 if (orders.length === 0) {
-                     orderList.appendChild(emptyState);
+                    orderList.innerHTML = `<tr id="empty-state"><td colspan="7" class="px-4 py-8 text-center text-slate-500">Belum ada pesanan yang masuk.</td></tr>`;
                 } else {
                     orders.forEach(order => {
                         const row = document.createElement('tr');
                         row.className = 'new-item-animation';
+                        
+                        // Style untuk status pembayaran
+                        const paymentStatusClass = order.paymentStatus === 'Lunas' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                        // Style untuk status pesanan
+                        const orderStatusClass = order.orderStatus === 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+
                         row.innerHTML = `
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900">${order.orderNumber}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700">${order.customerName}</td>
@@ -170,9 +198,10 @@
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900">${formatRupiah(order.total)} <span class="text-xs font-normal text-slate-500">(${order.paymentMethod})</span></td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm">
-                                <button data-id="${order.id}" class="toggle-status-btn px-2 py-1 text-xs font-semibold rounded-full ${order.status === 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
-                                    ${order.status}
-                                </button>
+                                <button data-id="${order.id}" class="toggle-payment-btn w-24 text-center px-2 py-1 text-xs font-semibold rounded-full ${paymentStatusClass}">${order.paymentStatus}</button>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                <button data-id="${order.id}" class="toggle-order-btn w-24 text-center px-2 py-1 text-xs font-semibold rounded-full ${orderStatusClass}">${order.orderStatus}</button>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm">
                                 <button data-id="${order.id}" class="delete-btn text-red-500 hover:text-red-700">Hapus</button>
@@ -185,24 +214,29 @@
             }
 
             orderList.addEventListener('click', (e) => {
-                const id = e.target.dataset.id;
+                const id = parseInt(e.target.dataset.id);
                 if (!id) return;
+                const order = orders.find(o => o.id === id);
 
-                if (e.target.classList.contains('toggle-status-btn')) {
-                    const order = orders.find(o => o.id == id);
-                    order.status = order.status === 'Diproses' ? 'Selesai' : 'Diproses';
+                if (e.target.classList.contains('toggle-payment-btn')) {
+                    order.paymentStatus = order.paymentStatus === 'Belum Bayar' ? 'Lunas' : 'Belum Bayar';
                 }
-
+                if (e.target.classList.contains('toggle-order-btn')) {
+                    order.orderStatus = order.orderStatus === 'Diproses' ? 'Selesai' : 'Diproses';
+                }
                 if (e.target.classList.contains('delete-btn')) {
-                    orders = orders.filter(o => o.id != id);
+                    orders = orders.filter(o => o.id !== id);
                 }
                 
+                saveData();
                 renderOrders();
             });
 
             function updateSummary() {
                 totalOrdersEl.textContent = orders.length;
-                const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+                const totalRevenue = orders
+                    .filter(order => order.paymentStatus === 'Lunas')
+                    .reduce((sum, order) => sum + order.total, 0);
                 totalRevenueEl.textContent = formatRupiah(totalRevenue);
             }
 
@@ -215,48 +249,30 @@
                     alert('Tidak ada data pesanan untuk di-export.');
                     return;
                 }
-
-                const headers = [
-                    'No Pesanan',
-                    'Nama Pemesan',
-                    'Nama Menu',
-                    'Harga Satuan',
-                    'Kuantitas',
-                    'Total Harga',
-                    'Metode Pembayaran',
-                    'Status Pesanan'
-                ];
-
-                const rows = orders.map(order => [
-                    order.orderNumber,
-                    order.customerName,
-                    order.menuName,
-                    order.menuPrice,
-                    order.menuQuantity,
-                    order.total,
-                    order.paymentMethod,
-                    order.status
-                ]);
-
-                let csvContent = "data:text/csv;charset=utf-8," 
-                    + headers.join(",") + "\n" 
-                    + rows.map(e => e.join(",")).join("\n");
-                
+                const headers = ['No Pesanan', 'Nama Pemesan', 'Nama Menu', 'Harga Satuan', 'Kuantitas', 'Total Harga', 'Metode Pembayaran', 'Status Pembayaran', 'Status Pesanan'];
+                const rows = orders.map(o => [o.orderNumber, o.customerName, o.menuName, o.menuPrice, o.menuQuantity, o.total, o.paymentMethod, o.paymentStatus, o.orderStatus]);
+                let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
                 const encodedUri = encodeURI(csvContent);
                 const link = document.createElement("a");
                 link.setAttribute("href", encodedUri);
-                
-                const now = new Date();
-                const timestamp = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}`;
+                const timestamp = new Date().toISOString().replace(/:/g, '-');
                 link.setAttribute("download", `laporan_bazaar_${timestamp}.csv`);
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
             });
             
-            // Render awal untuk menampilkan empty state
+            resetDataBtn.addEventListener('click', () => { resetModal.classList.remove('hidden'); });
+            cancelResetBtn.addEventListener('click', () => { resetModal.classList.add('hidden'); });
+            confirmResetBtn.addEventListener('click', () => {
+                localStorage.removeItem('bazaarOrders');
+                localStorage.removeItem('bazaarOrderCounter');
+                location.reload();
+            });
+            
             renderOrders();
         });
     </script>
 </body>
 </html>
+
