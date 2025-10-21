@@ -10,7 +10,6 @@
         body {
             font-family: 'Inter', sans-serif;
         }
-        /* Animasi sederhana untuk item baru */
         .new-item-animation {
             animation: fadeIn 0.5s ease-in-out;
         }
@@ -122,8 +121,19 @@
             const exportCsvBtn = document.getElementById('export-csv');
             const emptyState = document.getElementById('empty-state');
 
-            let orders = [];
-            let orderCounter = 1;
+            // --- PERUBAHAN 1: MEMUAT DATA SAAT HALAMAN DIBUKA ---
+            // Coba ambil data dari localStorage. Jika tidak ada, gunakan array kosong.
+            const savedOrders = JSON.parse(localStorage.getItem('bazaarOrders')) || [];
+            let orders = savedOrders;
+            // Coba ambil nomor urut terakhir. Jika tidak ada, mulai dari 1.
+            let orderCounter = parseInt(localStorage.getItem('bazaarOrderCounter')) || 1;
+
+
+            // --- FUNGSI BARU: MENYIMPAN DATA KE BROWSER ---
+            function saveData() {
+                localStorage.setItem('bazaarOrders', JSON.stringify(orders));
+                localStorage.setItem('bazaarOrderCounter', orderCounter);
+            }
 
             orderForm.addEventListener('submit', (e) => {
                 e.preventDefault();
@@ -143,21 +153,26 @@
                     menuQuantity,
                     total: menuPrice * menuQuantity,
                     paymentMethod,
-                    status: 'Diproses' // Status awal
+                    status: 'Diproses'
                 };
 
                 orders.push(newOrder);
+                saveData(); // --- PERUBAHAN 2: SIMPAN SETELAH MENAMBAH PESANAN ---
                 renderOrders();
                 orderForm.reset();
-                 document.getElementById('menu-quantity').value = 1; // Reset kuantitas ke 1
+                document.getElementById('menu-quantity').value = 1;
             });
 
             function renderOrders() {
-                orderList.innerHTML = ''; // Kosongkan daftar
+                orderList.innerHTML = ''; 
 
                 if (orders.length === 0) {
                      orderList.appendChild(emptyState);
                 } else {
+                    // Sembunyikan pesan kosong jika ada data
+                    if(document.getElementById('empty-state')) {
+                       document.getElementById('empty-state').style.display = 'none';
+                    }
                     orders.forEach(order => {
                         const row = document.createElement('tr');
                         row.className = 'new-item-animation';
@@ -197,6 +212,7 @@
                     orders = orders.filter(o => o.id != id);
                 }
                 
+                saveData(); // --- PERUBAHAN 3: SIMPAN SETELAH MENGUBAH/MENGHAPUS PESANAN ---
                 renderOrders();
             });
 
@@ -254,7 +270,7 @@
                 document.body.removeChild(link);
             });
             
-            // Render awal untuk menampilkan empty state
+            // --- PERUBAHAN 4: TAMPILKAN DATA YANG TERSIMPAN SAAT HALAMAN PERTAMA KALI DIBUKA ---
             renderOrders();
         });
     </script>
