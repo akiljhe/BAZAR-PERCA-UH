@@ -46,9 +46,15 @@
 </head>
 <body class="bg-slate-50 text-slate-800">
 
+    <!-- Overlay Loading Awal -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p class="text-slate-600 font-medium">Menghubungkan ke database...</p>
+    </div>
+
     <div class="container mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">BAZAR UNIT PERSATUAN CATUR UNHAS</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar (Tim)</h1>
             <p class="text-slate-600 mt-2">Divisi Dana dan Usaha</p>
         </header>
 
@@ -137,16 +143,26 @@
                             <p id="total-revenue" class="text-2xl font-bold text-emerald-900">Rp 0</p>
                         </div>
                     </div>
-                     <div class="mt-6 space-y-3">
+                    
+                    <!-- Tombol Export Utama -->
+                     <div class="mt-6">
                         <button id="export-csv" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center space-x-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
                             <span>Export Laporan ke Excel (CSV)</span>
                         </button>
-                        <button id="reset-data" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center space-x-2">
+                    </div>
+
+                    <!-- ===== ZONA BERBAHAYA (PERUBAHAN DI SINI) ===== -->
+                    <div class="mt-8 pt-6 border-t border-slate-200">
+                        <h3 class="text-lg font-semibold text-red-700">Zona Berbahaya</h3>
+                        <p class="text-sm text-slate-600 mt-2 mb-4">Aksi di bawah ini bersifat permanen dan tidak dapat dibatalkan. Hati-hati.</p>
+                        <button id="reset-data" class="text-red-600 hover:bg-red-100 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                            <span>Reset Semua Data</span>
+                            <span>Reset Semua Data Database</span>
                         </button>
                     </div>
+                    <!-- ============================================== -->
+
                 </div>
             </div>
         </main>
@@ -270,6 +286,7 @@
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900">${formatRupiah(order.total)} <span class="text-xs font-normal text-slate-500">(${order.paymentMethod})</span></td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm">
                                 <button data-id="${order.id}" class="toggle-payment-btn w-24 text-center px-2 py-1 text-xs font-semibold rounded-full ${paymentStatusClass}">${order.paymentStatus}</button>
+
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm">
                                 <button data-id="${order.id}" class="toggle-order-btn w-24 text-center px-2 py-1 text-xs font-semibold rounded-full ${orderStatusClass}">${order.orderStatus}</button>
