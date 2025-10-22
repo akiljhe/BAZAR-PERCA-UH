@@ -3,56 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>APLIKASI BAZAR PERCAUH</title>
-    <!-- Link ke Manifest PWA -->
+    <title>Aplikasi Kasir Bazaar (Tim)</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0284c7"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .new-item-animation { animation: fadeIn 0.5s ease-in-out; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        #loading-overlay {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100;
-            flex-direction: column;
-            gap: 1rem;
-        }
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 5px solid #CBD5E1; /* slate-300 */
-            border-bottom-color: #0284C7; /* sky-600 */
-            border-radius: 50%;
-            display: inline-block;
-            box-sizing: border-box;
-            animation: rotation 1s linear infinite;
-        }
-        @keyframes rotation {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+   
 </head>
 <body class="bg-slate-50 text-slate-800">
+
+   
     <div class="container mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">BAZAR UNIT PERSATUAN CATUR UNHAS</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar (Tim)</h1>
             <p class="text-slate-600 mt-2">Divisi Dana dan Usaha</p>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <!-- Kolom Input -->
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg self-start">
                 <h2 class="text-2xl font-semibold mb-6 border-b pb-3">Tambah Pesanan Baru</h2>
                 <form id="order-form" class="space-y-4">
@@ -96,7 +63,6 @@
                 </form>
             </div>
             
-            <!-- Kolom Daftar Pesanan -->
             <div class="lg:col-span-3">
                  <div class="bg-white p-6 rounded-xl shadow-lg">
                     <h2 class="text-2xl font-semibold mb-4">Daftar Pesanan (Real-time)</h2>
@@ -123,7 +89,6 @@
                     </div>
                 </div>
 
-                <!-- Laporan & Aksi -->
                 <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
                     <h2 class="text-2xl font-semibold mb-4">Laporan & Aksi</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -137,7 +102,6 @@
                         </div>
                     </div>
                     
-                    <!-- Tombol Export Utama -->
                      <div class="mt-6">
                         <button id="export-csv" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center space-x-2">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
@@ -145,7 +109,6 @@
                         </button>
                     </div>
 
-                    <!-- ===== ZONA BERBAHAYA (PERUBAHAN DI SINI) ===== -->
                     <div class="mt-8 pt-6 border-t border-slate-200">
                         <h3 class="text-lg font-semibold text-red-700">Zona Berbahaya</h3>
                         <p class="text-sm text-slate-600 mt-2 mb-4">Aksi di bawah ini bersifat permanen dan tidak dapat dibatalkan. Hati-hati.</p>
@@ -154,36 +117,29 @@
                             <span>Reset Semua Data Database</span>
                         </button>
                     </div>
-                    <!-- ============================================== -->
-
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- ===== MODAL KONFIRMASI RESET (DIPERBARUI) ===== -->
     <div id="reset-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white p-8 rounded-lg shadow-xl text-center w-11/12 max-w-sm">
             <h3 class="text-xl font-bold mb-4">Reset Semua Data?</h3>
             <p class="text-sm text-slate-600 mb-6">Semua data pesanan di database akan dihapus permanen. Aksi ini membutuhkan password.</p>
             
-            <!-- ===== PASSWORD INPUT (BARU) ===== -->
             <div class="mt-4 text-left">
                 <label for="reset-password-input" class="block text-sm font-medium text-slate-700">Password Konfirmasi</label>
                 <input type="password" id="reset-password-input" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Masukkan password...">
-                <p id="reset-error-message" class="text-red-500 text-sm mt-1 h-4"></p> <!-- Placeholder untuk error -->
+                <p id="reset-error-message" class="text-red-500 text-sm mt-1 h-4"></p> 
             </div>
-            <!-- =================================== -->
 
-            <div class="flex justify-center gap-4 mt-6"> <!-- Tambah margin atas -->
+            <div class="flex justify-center gap-4 mt-6"> 
                 <button id="cancel-reset" class="px-6 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg transition-colors">Batal</button>
                 <button id="confirm-reset" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">Ya, Hapus Semua</button>
             </div>
         </div>
     </div>
-    <!-- ============================================== -->
 
-    <!-- Modal Konfirmasi Hapus Satuan -->
     <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white p-8 rounded-lg shadow-xl text-center w-11/1S max-w-sm">
             <h3 class="text-xl font-bold mb-4">Hapus Pesanan Ini?</h3>
@@ -195,7 +151,6 @@
         </div>
     </div>
     
-    <!-- Impor Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -203,31 +158,23 @@
             getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setLogLevel
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // --- 1. INISIALISASI ---
-        
-        // ! KUNCI FIREBASE ANDA YANG BENAR DARI SCREENSHOT 18.40.14 !
         const firebaseConfig = {
           apiKey: "AIzaSyAk8bJp78FsDEyHWlzn1nAbRhGIYMIQXKY",
           authDomain: "aplikasi-bazar-percauh.firebaseapp.com",
           projectId: "aplikasi-bazar-percauh",
-          storageBucket: "aplikasi-bazar-percauh.appspot.com", // Saya perbaiki typo dari ".firebasestorage.app"
+          storageBucket: "aplikasi-bazar-percauh.appspot.com", 
           messagingSenderId: "725305777021",
           appId: "1:725305777021:web:dc5c6a39c32a80e0420a14",
           measurementId: "G-T8SJL93HSL"
         };
-        // ! ----------------------------------------------------- !
         
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        // setLogLevel('Debug'); // Hapus komentar ini jika ada masalah
-
-        // Path ke koleksi data Anda
         const colPath = `orders`;
         const ordersCollection = collection(db, colPath);
 
-        // Ambil elemen HTML
         const orderForm = document.getElementById('order-form');
         const orderList = document.getElementById('order-list');
         const totalOrdersEl = document.getElementById('total-orders');
@@ -244,15 +191,11 @@
         const cancelDeleteBtn = document.getElementById('cancel-delete');
         const confirmDeleteBtn = document.getElementById('confirm-delete');
         
-        // ===== ELEMEN MODAL RESET (BARU) =====
         const resetPasswordInput = document.getElementById('reset-password-input');
         const resetErrorMessage = document.getElementById('reset-error-message');
-        // ===================================
         
-        let localOrders = []; // Simpanan data lokal
-        let orderIdToDelete = null; // Variabel untuk menyimpan ID yang akan dihapus
-
-        // --- 2. FUNGSI UTAMA ---
+        let localOrders = []; 
+        let orderIdToDelete = null; 
 
         async function initAuth() {
             try {
@@ -389,8 +332,6 @@
                 alert("Gagal melakukan aksi. Cek koneksi internet.");
             }
         });
-
-        // --- 3. FUNGSI BANTUAN ---
         
         function formatRupiah(amount) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
@@ -439,32 +380,28 @@
             document.body.removeChild(link);
         });
         
-        // --- Event Listener untuk Modal Reset (DIPERBARUI DENGAN PASSWORD) ---
         resetDataBtn.addEventListener('click', () => {
-            resetPasswordInput.value = ''; // Kosongkan password saat modal dibuka
-            resetErrorMessage.textContent = ''; // Kosongkan error saat modal dibuka
+            resetPasswordInput.value = ''; 
+            resetErrorMessage.textContent = ''; 
             resetModal.classList.remove('hidden'); 
         });
 
         cancelResetBtn.addEventListener('click', () => { 
             resetModal.classList.add('hidden'); 
-            resetPasswordInput.value = ''; // Kosongkan password saat modal ditutup
-            resetErrorMessage.textContent = ''; // Kosongkan error saat modal ditutup
+            resetPasswordInput.value = ''; 
+            resetErrorMessage.textContent = ''; 
         });
         
         confirmResetBtn.addEventListener('click', async () => {
             const password = resetPasswordInput.value;
 
-            // ===== CEK PASSWORD DI SINI =====
             if (password !== "Akil Ganteng") {
                 resetErrorMessage.textContent = 'Password salah. Coba lagi.';
-                return; // Berhenti jika password salah
+                return; 
             }
-            // =================================
 
-            // Password benar, lanjutkan proses
-            resetErrorMessage.textContent = ''; // Hapus pesan error
-            resetModal.classList.add('hidden'); // Sembunyikan modal
+            resetErrorMessage.textContent = ''; 
+            resetModal.classList.add('hidden'); 
             console.log("Mulai mereset semua data...");
             
             confirmResetBtn.disabled = true;
@@ -486,12 +423,10 @@
             } finally {
                 confirmResetBtn.disabled = false;
                 confirmResetBtn.textContent = 'Ya, Hapus Semua';
-                resetPasswordInput.value = ''; // Kosongkan password setelah selesai
+                resetPasswordInput.value = ''; 
             }
         });
-        // ===========================================
 
-        // --- Event Listener untuk Modal Hapus Satuan ---
         cancelDeleteBtn.addEventListener('click', () => {
             deleteModal.classList.add('hidden');
             orderIdToDelete = null; 
@@ -518,9 +453,7 @@
                 confirmDeleteBtn.textContent = 'Ya, Hapus';
             }
         });
-        // ===========================================
 
-        // Pendaftaran Service Worker (PWA)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/BAZAR-PERCA-UH/sw.js')
@@ -533,7 +466,6 @@
             });
         }
         
-        // --- 4. MULAI APLIKASI ---
         initAuth();
 
     </script>
