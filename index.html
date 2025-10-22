@@ -55,7 +55,7 @@
 
     <div class="container mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar (Tim)</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar (UNIT PERCAUH)</h1>
             <p class="text-slate-600 mt-2">Divisi Dana dan Usaha</p>
         </header>
 
@@ -178,23 +178,28 @@
     <script type="module">
         // Impor fungsi-fungsi yang kita butuhkan dari Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { 
             getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setLogLevel
         } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         // --- 1. INISIALISASI ---
         
-        // Ambil konfigurasi Firebase dari environment Canvas
-        const firebaseConfigStr = typeof __firebase_config !== 'undefined' 
-            ? __firebase_config 
-            : '{}';
-        const firebaseConfig = JSON.parse(firebaseConfigStr);
+        // ! KUNCI FIREBASE ANDA SUDAH DIMASUKKAN DI SINI !
+        const firebaseConfig = {
+          apiKey: "AIzaSyAk8bJp78FsDEyHWlzn1nAbRhGIYMIQXKY",
+          authDomain: "aplikasi-bazar-percauh.firebaseapp.com",
+          projectId: "aplikasi-bazar-percauh",
+          storageBucket: "aplikasi-bazar-percauh.firebasestorage.app", // typo di 'firebasestorage'
+          messagingSenderId: "725305777021",
+          appId: "1:725305777021:web:dc5c6a39c32a80e0420a14",
+          measurementId: "G-T8SJL93HSL"
+        };
+        // ! ----------------------------------------------------- !
 
         // Ambil App ID unik untuk database kita
-        const appId = typeof __app_id !== 'undefined' 
-            ? __app_id 
-            : 'bazaar-kasir-default';
+        // Kita gunakan projectId Anda agar lebih konsisten
+        const appId = firebaseConfig.projectId || 'bazaar-kasir-default';
         
         // Inisialisasi aplikasi Firebase
         const app = initializeApp(firebaseConfig);
@@ -202,11 +207,11 @@
         const auth = getAuth(app);
         
         // (Opsional) Tampilkan log Firebase untuk debugging
-        setLogLevel('Debug');
+        // setLogLevel('Debug'); // Hapus komentar ini jika ada masalah
 
         // Tentukan "folder" di database untuk menyimpan pesanan kita.
         // Ini adalah folder publik yang bisa diakses semua admin.
-        const colPath = `artifacts/${appId}/public/data/orders`;
+        const colPath = `orders`; // Kita buat simpel saja
         const ordersCollection = collection(db, colPath);
 
         // Ambil elemen-elemen HTML
@@ -231,12 +236,8 @@
         // Fungsi untuk login ke Firebase
         async function initAuth() {
             try {
-                const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                if (authToken) {
-                    await signInWithCustomToken(auth, authToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // Kita gunakan login anonim saja, lebih mudah
+                await signInAnonymously(auth);
                 console.log("Firebase Auth berhasil. User:", auth.currentUser.uid);
                 // Setelah login berhasil, baru kita mulai mendengarkan data
                 loadRealtimeOrders();
@@ -291,7 +292,7 @@
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700">${order.panitiaName || '-'}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">
                                 <div class="font-medium text-slate-800">${order.menuName}</div>
-                                <div>${order.menuQuantity} x ${formatRupiah(order.total / order.menuQuantity)}</div>
+                                <div>${order.menuQuantity} x ${formatRipiah(order.menuPrice)}</div>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900">${formatRupiah(order.total)} <span class="text-xs font-normal text-slate-500">(${order.paymentMethod})</span></td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm">
@@ -392,6 +393,17 @@
         });
 
         // --- 3. FUNGSI BANTUAN ---
+        
+        // Fungsi untuk format Rupiah
+        function formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+        }
+        
+        // Fungsi untuk format harga satuan di tabel (pastikan ini ada)
+        function formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+        }
+
 
         // Fungsi untuk update ringkasan
         function updateSummary() {
@@ -400,11 +412,6 @@
                 .filter(order => order.paymentStatus === 'Lunas')
                 .reduce((sum, order) => sum + order.total, 0);
             totalRevenueEl.textContent = formatRupiah(totalRevenue);
-        }
-
-        // Fungsi untuk format Rupiah
-        function formatRupiah(amount) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
         }
 
         // Fungsi untuk Export CSV (menggunakan data lokal)
@@ -416,14 +423,20 @@
             // TAMBAHAN BARU: NAMA PANITIA DI HEADER
             const headers = ['No Pesanan', 'Nama Pemesan', 'Nama Panitia', 'Nama Menu', 'Harga Satuan', 'Kuantitas', 'Total Harga', 'Metode Pembayaran', 'Status Pembayaran', 'Status Pesanan', 'Waktu Dibuat'];
             
-            // Urutkan berdasarkan nomor pesanan (orderNumber) yang digenerate saat render
+            // Urutkan berdasarkan waktu dibuat (createdAt)
             const sortedOrders = [...localOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
             
             const rows = sortedOrders.map((o, index) => [
                 index + 1, // Generate nomor urut
                 o.customerName, 
                 o.panitiaName || '', // TAMBAHAN BARU: NAMA PANITIA DI ROW
-                o.menuName, o.menuPrice, o.menuQuantity, o.total, o.paymentMethod, o.paymentStatus, o.orderStatus,
+                o.menuName, 
+                o.menuPrice, // Harga satuan
+                o.menuQuantity, 
+                o.total, 
+                o.paymentMethod, 
+                o.paymentStatus, 
+                o.orderStatus,
                 new Date(o.createdAt).toLocaleString('id-ID')
             ]);
 
