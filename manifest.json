@@ -1,0 +1,17 @@
+{
+"name": "Kasir Bazaar (Tim)",
+"short_name": "Kasir Tim",
+"description": "Aplikasi kasir real-time untuk tim bazaar",
+"start_url": "/BAZAR-PERCA-UH/",
+"display": "standalone",
+"background_color": "#f8fafc",
+"theme_color": "#0284c7",
+"icons": [
+{
+"src": "/BAZAR-PERCA-UH/icon.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+]
+}
