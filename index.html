@@ -55,7 +55,7 @@
 
     <div class="container mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar (UNIT PERCAUH)</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar (Tim)</h1>
             <p class="text-slate-600 mt-2">Divisi Dana dan Usaha</p>
         </header>
 
@@ -292,7 +292,8 @@
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700">${order.panitiaName || '-'}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">
                                 <div class="font-medium text-slate-800">${order.menuName}</div>
-                                <div>${order.menuQuantity} x ${formatRipiah(order.menuPrice)}</div>
+                                <!-- PERBAIKAN TYPO: formatRipiah -> formatRupiah -->
+                                <div>${order.menuQuantity} x ${formatRupiah(order.menuPrice)}</div>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900">${formatRupiah(order.total)} <span class="text-xs font-normal text-slate-500">(${order.paymentMethod})</span></td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm">
@@ -395,14 +396,12 @@
         // --- 3. FUNGSI BANTUAN ---
         
         // Fungsi untuk format Rupiah
+        // HANYA SATU FUNGSI YANG BENAR
         function formatRupiah(amount) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
         }
         
-        // Fungsi untuk format harga satuan di tabel (pastikan ini ada)
-        function formatRupiah(amount) {
-            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
-        }
+        // FUNGSI DUPLIKAT DIHAPUS DARI SINI
 
 
         // Fungsi untuk update ringkasan
