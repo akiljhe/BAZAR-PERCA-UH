@@ -1,0 +1,16 @@
+{
+"name": "Aplikasi Kasir Bazaar",
+"short_name": "Kasir Bazaar",
+"start_url": "/BAZAR-PERCA-UH/",
+"display": "standalone",
+"background_color": "#f8fafc",
+"theme_color": "#0284c7",
+"description": "Aplikasi kasir real-time untuk kegiatan bazaar.",
+"icons": [
+{
+"src": "/BAZAR-PERCA-UH/icon.png",
+"sizes": "512x512",
+"type": "image/png"
+}
+]
+}
