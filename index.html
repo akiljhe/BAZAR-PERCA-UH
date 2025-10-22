@@ -3,32 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aplikasi Kasir Bazaar UNIT PERSATUAN CATUR UNHAS</title>
+    <title>Aplikasi Kasir Bazaar (UNIT PERCAUH)</title>
+    <!-- Link ke Manifest PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0284c7"/>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
-        .new-item-animation {
-            animation: fadeIn 0.5s ease-in-out;
-        }
+        body { font-family: 'Inter', sans-serif; }
+        .new-item-animation { animation: fadeIn 0.5s ease-in-out; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        /* Animasi loading sederhana */
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #CBD5E1; /* slate-300 */
+            border-bottom-color: #0284C7; /* sky-600 */
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
 
+    <!-- Overlay Loading Awal -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p class="text-slate-600 font-medium">Menghubungkan ke database...</p>
+    </div>
+
     <div class="container mx-auto p-4 md:p-8">
         <header class="text-center mb-8">
-            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar</h1>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar (Tim)</h1>
             <p class="text-slate-600 mt-2">Divisi Dana dan Usaha</p>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
-            <!-- Kolom Input Pesanan -->
+            <!-- Kolom Input (Sama seperti sebelumnya) -->
             <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg self-start">
                 <h2 class="text-2xl font-semibold mb-6 border-b pb-3">Tambah Pesanan Baru</h2>
                 <form id="order-form" class="space-y-4">
@@ -55,7 +87,6 @@
                             <option>Transfer</option>
                         </select>
                     </div>
-                     <!-- TAMBAHAN BARU: Status Pembayaran -->
                     <div>
                         <label for="payment-status" class="block text-sm font-medium text-slate-700">Status Pembayaran</label>
                         <select id="payment-status" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
@@ -63,16 +94,16 @@
                             <option>Lunas</option>
                         </select>
                     </div>
-                    <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                    <button type="submit" id="submit-button" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md">
                         Tambah Pesanan
                     </button>
                 </form>
             </div>
-
-            <!-- Kolom Daftar Pesanan dan Laporan -->
+            
+            <!-- Kolom Daftar Pesanan (Sama seperti sebelumnya) -->
             <div class="lg:col-span-3">
-                <div class="bg-white p-6 rounded-xl shadow-lg">
-                    <h2 class="text-2xl font-semibold mb-4">Daftar Pesanan</h2>
+                 <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4">Daftar Pesanan (Real-time)</h2>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-slate-200">
                             <thead class="bg-slate-50">
@@ -88,13 +119,14 @@
                             </thead>
                             <tbody id="order-list" class="bg-white divide-y divide-slate-200">
                                 <tr id="empty-state">
-                                    <td colspan="7" class="px-4 py-8 text-center text-slate-500">Belum ada pesanan yang masuk.</td>
+                                    <td colspan="7" class="px-4 py-8 text-center text-slate-500">Menghubungkan ke database...</td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
+                <!-- Laporan & Aksi (Sama seperti sebelumnya) -->
                 <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
                     <h2 class="text-2xl font-semibold mb-4">Laporan & Aksi</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -122,79 +154,124 @@
         </main>
     </div>
 
-    <!-- Modal Konfirmasi Reset -->
+    <!-- Modal Konfirmasi Reset (Sama seperti sebelumnya) -->
     <div id="reset-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
         <div class="bg-white p-8 rounded-lg shadow-xl text-center w-11/12 max-w-sm">
             <h3 class="text-xl font-bold mb-4">Anda Yakin?</h3>
-            <p class="text-sm text-slate-600 mb-6">Semua data pesanan yang tersimpan akan dihapus secara permanen.</p>
+            <p class="text-sm text-slate-600 mb-6">Semua data pesanan di database akan dihapus permanen untuk SEMUA admin.</p>
             <div class="flex justify-center gap-4">
                 <button id="cancel-reset" class="px-6 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg transition-colors">Batal</button>
-                <button id="confirm-reset" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">Ya, Hapus</button>
+                <button id="confirm-reset" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">Ya, Hapus Semua</button>
             </div>
         </div>
     </div>
+    
+    <!-- Impor Firebase SDK -->
+    <script type="module">
+        // Impor fungsi-fungsi yang kita butuhkan dari Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const orderForm = document.getElementById('order-form');
-            const orderList = document.getElementById('order-list');
-            const totalOrdersEl = document.getElementById('total-orders');
-            const totalRevenueEl = document.getElementById('total-revenue');
-            const exportCsvBtn = document.getElementById('export-csv');
-            const resetDataBtn = document.getElementById('reset-data');
-            const resetModal = document.getElementById('reset-modal');
-            const cancelResetBtn = document.getElementById('cancel-reset');
-            const confirmResetBtn = document.getElementById('confirm-reset');
+        // --- 1. INISIALISASI ---
+        
+        // Ambil konfigurasi Firebase dari environment Canvas
+        const firebaseConfigStr = typeof __firebase_config !== 'undefined' 
+            ? __firebase_config 
+            : '{}';
+        const firebaseConfig = JSON.parse(firebaseConfigStr);
 
-            let orders = JSON.parse(localStorage.getItem('bazaarOrders')) || [];
-            let orderCounter = parseInt(localStorage.getItem('bazaarOrderCounter')) || 1;
+        // Ambil App ID unik untuk database kita
+        const appId = typeof __app_id !== 'undefined' 
+            ? __app_id 
+            : 'bazaar-kasir-default';
+        
+        // Inisialisasi aplikasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        // (Opsional) Tampilkan log Firebase untuk debugging
+        setLogLevel('Debug');
 
-            function saveData() {
-                localStorage.setItem('bazaarOrders', JSON.stringify(orders));
-                localStorage.setItem('bazaarOrderCounter', orderCounter);
-            }
+        // Tentukan "folder" di database untuk menyimpan pesanan kita.
+        // Ini adalah folder publik yang bisa diakses semua admin.
+        const colPath = `artifacts/${appId}/public/data/orders`;
+        const ordersCollection = collection(db, colPath);
 
-            orderForm.addEventListener('submit', (e) => {
-                e.preventDefault();
-                const newOrder = {
-                    id: Date.now(),
-                    orderNumber: orderCounter++,
-                    customerName: document.getElementById('customer-name').value,
-                    menuName: document.getElementById('menu-name').value,
-                    menuPrice: parseFloat(document.getElementById('menu-price').value),
-                    menuQuantity: parseInt(document.getElementById('menu-quantity').value),
-                    total: parseFloat(document.getElementById('menu-price').value) * parseInt(document.getElementById('menu-quantity').value),
-                    paymentMethod: document.getElementById('payment-method').value,
-                    paymentStatus: document.getElementById('payment-status').value, // Mengambil status pembayaran
-                    orderStatus: 'Diproses'
-                };
-                orders.push(newOrder);
-                saveData();
-                renderOrders();
-                orderForm.reset();
-                document.getElementById('menu-quantity').value = 1;
-            });
+        // Ambil elemen-elemen HTML
+        const orderForm = document.getElementById('order-form');
+        const orderList = document.getElementById('order-list');
+        const totalOrdersEl = document.getElementById('total-orders');
+        const totalRevenueEl = document.getElementById('total-revenue');
+        const exportCsvBtn = document.getElementById('export-csv');
+        const resetDataBtn = document.getElementById('reset-data');
+        const resetModal = document.getElementById('reset-modal');
+        const cancelResetBtn = document.getElementById('cancel-reset');
+        const confirmResetBtn = document.getElementById('confirm-reset');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const emptyState = document.getElementById('empty-state');
+        const submitButton = document.getElementById('submit-button');
+        
+        // Variabel untuk menyimpan data pesanan secara lokal
+        let localOrders = [];
 
-            function renderOrders() {
-                orderList.innerHTML = ''; 
-                if (orders.length === 0) {
-                    orderList.innerHTML = `<tr id="empty-state"><td colspan="7" class="px-4 py-8 text-center text-slate-500">Belum ada pesanan yang masuk.</td></tr>`;
+        // --- 2. FUNGSI UTAMA ---
+
+        // Fungsi untuk login ke Firebase
+        async function initAuth() {
+            try {
+                const authToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+                if (authToken) {
+                    await signInWithCustomToken(auth, authToken);
                 } else {
-                    orders.forEach(order => {
+                    await signInAnonymously(auth);
+                }
+                console.log("Firebase Auth berhasil. User:", auth.currentUser.uid);
+                // Setelah login berhasil, baru kita mulai mendengarkan data
+                loadRealtimeOrders();
+            } catch (error) {
+                console.error("Firebase Auth Gagal:", error);
+                loadingOverlay.innerHTML = '<p class="text-red-600 font-medium">Gagal terhubung ke database. Cek koneksi internet.</p>';
+            }
+        }
+
+        // Fungsi untuk memuat data pesanan secara REAL-TIME
+        function loadRealtimeOrders() {
+            // onSnapshot adalah "mata-mata" yang akan memberi tahu kita setiap ada perubahan di database
+            onSnapshot(ordersCollection, (snapshot) => {
+                localOrders = []; // Kosongkan data lokal
+                orderList.innerHTML = ''; // Kosongkan tabel
+                
+                if (snapshot.empty) {
+                    // Jika tidak ada data, tampilkan pesan kosong
+                    if (emptyState) orderList.appendChild(emptyState);
+                } else {
+                    // Ambil semua dokumen, ubah jadi data, dan beri ID
+                    const docs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                    
+                    // Urutkan data berdasarkan waktu dibuat (createdAt)
+                    docs.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                    
+                    let orderNumber = 1;
+                    docs.forEach(order => {
+                        localOrders.push(order); // Simpan ke data lokal
+                        
+                        // Buat baris tabel (sama seperti versi lama)
                         const row = document.createElement('tr');
                         row.className = 'new-item-animation';
                         
-                        // Style untuk status pembayaran
                         const paymentStatusClass = order.paymentStatus === 'Lunas' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
-                        // Style untuk status pesanan
                         const orderStatusClass = order.orderStatus === 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
 
                         row.innerHTML = `
-                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900">${order.orderNumber}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900">${orderNumber++}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700">${order.customerName}</td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">
                                 <div class="font-medium text-slate-800">${order.menuName}</div>
-                                <div>${order.menuQuantity} x ${formatRupiah(order.menuPrice)}</div>
+                                <div>${order.menuQuantity} x ${formatRupiah(order.total / order.menuQuantity)}</div>
                             </td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900">${formatRupiah(order.total)} <span class="text-xs font-normal text-slate-500">(${order.paymentMethod})</span></td>
                             <td class="px-4 py-3 whitespace-nowrap text-sm">
@@ -210,68 +287,186 @@
                         orderList.appendChild(row);
                     });
                 }
+                // Update ringkasan (Total Pesanan, Total Pemasukan)
                 updateSummary();
+                // Sembunyikan loading overlay setelah data pertama dimuat
+                loadingOverlay.classList.add('hidden');
+            }, (error) => {
+                // Tangani error jika gagal memuat data
+                console.error("Gagal mendengarkan data pesanan:", error);
+                loadingOverlay.innerHTML = '<p class="text-red-600 font-medium">Gagal memuat data. Cek koneksi internet.</p>';
+            });
+        }
+
+        // Fungsi saat form disubmit (TAMBAH data)
+        orderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Nonaktifkan tombol submit untuk mencegah double-click
+            submitButton.disabled = true;
+            submitButton.textContent = 'Menyimpan...';
+
+            const newOrder = {
+                customerName: document.getElementById('customer-name').value,
+                menuName: document.getElementById('menu-name').value,
+                menuPrice: parseFloat(document.getElementById('menu-price').value),
+                menuQuantity: parseInt(document.getElementById('menu-quantity').value),
+                total: parseFloat(document.getElementById('menu-price').value) * parseInt(document.getElementById('menu-quantity').value),
+                paymentMethod: document.getElementById('payment-method').value,
+                paymentStatus: document.getElementById('payment-status').value,
+                orderStatus: 'Diproses',
+                createdAt: Date.now() // Tambahkan timestamp untuk pengurutan
+            };
+
+            try {
+                // Tambahkan dokumen baru ke Firestore
+                await addDoc(ordersCollection, newOrder);
+                orderForm.reset();
+                document.getElementById('menu-quantity').value = 1;
+                // Tidak perlu panggil renderOrders(), onSnapshot akan berjalan otomatis
+            } catch (error) {
+                console.error("Error menambah pesanan:", error);
+                alert("Gagal menambah pesanan. Cek koneksi internet.");
+            } finally {
+                // Aktifkan kembali tombol submit
+                submitButton.disabled = false;
+                submitButton.textContent = 'Tambah Pesanan';
             }
+        });
 
-            orderList.addEventListener('click', (e) => {
-                const id = parseInt(e.target.dataset.id);
-                if (!id) return;
-                const order = orders.find(o => o.id === id);
+        // Fungsi saat tombol di tabel diklik (UPDATE atau DELETE data)
+        orderList.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (!id) return; // Jika yang diklik bukan tombol, abaikan
 
+            // Dapatkan referensi dokumen yang akan diubah/dihapus
+            const docRef = doc(db, colPath, id);
+            
+            try {
                 if (e.target.classList.contains('toggle-payment-btn')) {
-                    order.paymentStatus = order.paymentStatus === 'Belum Bayar' ? 'Lunas' : 'Belum Bayar';
-                }
-                if (e.target.classList.contains('toggle-order-btn')) {
-                    order.orderStatus = order.orderStatus === 'Diproses' ? 'Selesai' : 'Diproses';
-                }
-                if (e.target.classList.contains('delete-btn')) {
-                    orders = orders.filter(o => o.id !== id);
+                    // Ambil status saat ini dari data lokal
+                    const currentOrder = localOrders.find(o => o.id === id);
+                    const newStatus = currentOrder.paymentStatus === 'Lunas' ? 'Belum Bayar' : 'Lunas';
+                    // Update field paymentStatus di Firestore
+                    await updateDoc(docRef, { paymentStatus: newStatus });
                 }
                 
-                saveData();
-                renderOrders();
-            });
-
-            function updateSummary() {
-                totalOrdersEl.textContent = orders.length;
-                const totalRevenue = orders
-                    .filter(order => order.paymentStatus === 'Lunas')
-                    .reduce((sum, order) => sum + order.total, 0);
-                totalRevenueEl.textContent = formatRupiah(totalRevenue);
-            }
-
-            function formatRupiah(amount) {
-                return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
-            }
-
-            exportCsvBtn.addEventListener('click', () => {
-                if (orders.length === 0) {
-                    alert('Tidak ada data pesanan untuk di-export.');
-                    return;
+                if (e.target.classList.contains('toggle-order-btn')) {
+                    const currentOrder = localOrders.find(o => o.id === id);
+                    const newStatus = currentOrder.orderStatus === 'Selesai' ? 'Diproses' : 'Selesai';
+                    // Update field orderStatus di Firestore
+                    await updateDoc(docRef, { orderStatus: newStatus });
                 }
-                const headers = ['No Pesanan', 'Nama Pemesan', 'Nama Menu', 'Harga Satuan', 'Kuantitas', 'Total Harga', 'Metode Pembayaran', 'Status Pembayaran', 'Status Pesanan'];
-                const rows = orders.map(o => [o.orderNumber, o.customerName, o.menuName, o.menuPrice, o.menuQuantity, o.total, o.paymentMethod, o.paymentStatus, o.orderStatus]);
-                let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
-                const encodedUri = encodeURI(csvContent);
-                const link = document.createElement("a");
-                link.setAttribute("href", encodedUri);
-                const timestamp = new Date().toISOString().replace(/:/g, '-');
-                link.setAttribute("download", `laporan_bazaar_${timestamp}.csv`);
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-            });
-            
-            resetDataBtn.addEventListener('click', () => { resetModal.classList.remove('hidden'); });
-            cancelResetBtn.addEventListener('click', () => { resetModal.classList.add('hidden'); });
-            confirmResetBtn.addEventListener('click', () => {
-                localStorage.removeItem('bazaarOrders');
-                localStorage.removeItem('bazaarOrderCounter');
-                location.reload();
-            });
-            
-            renderOrders();
+                
+                if (e.target.classList.contains('delete-btn')) {
+                    // Hapus dokumen dari Firestore
+                    await deleteDoc(docRef);
+                }
+                // Tidak perlu panggil renderOrders(), onSnapshot akan berjalan otomatis
+            } catch (error) {
+                console.error("Gagal update/delete dokumen:", error);
+                alert("Gagal melakukan aksi. Cek koneksi internet.");
+            }
         });
+
+        // --- 3. FUNGSI BANTUAN ---
+
+        // Fungsi untuk update ringkasan
+        function updateSummary() {
+            totalOrdersEl.textContent = localOrders.length;
+            const totalRevenue = localOrders
+                .filter(order => order.paymentStatus === 'Lunas')
+                .reduce((sum, order) => sum + order.total, 0);
+            totalRevenueEl.textContent = formatRupiah(totalRevenue);
+        }
+
+        // Fungsi untuk format Rupiah
+        function formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+        }
+
+        // Fungsi untuk Export CSV (menggunakan data lokal)
+        exportCsvBtn.addEventListener('click', () => {
+            if (localOrders.length === 0) {
+                alert('Tidak ada data pesanan untuk di-export.');
+                return;
+            }
+            const headers = ['No Pesanan', 'Nama Pemesan', 'Nama Menu', 'Harga Satuan', 'Kuantitas', 'Total Harga', 'Metode Pembayaran', 'Status Pembayaran', 'Status Pesanan', 'Waktu Dibuat'];
+            
+            // Urutkan berdasarkan nomor pesanan (orderNumber) yang digenerate saat render
+            const sortedOrders = [...localOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            
+            const rows = sortedOrders.map((o, index) => [
+                index + 1, // Generate nomor urut
+                o.customerName, o.menuName, o.menuPrice, o.menuQuantity, o.total, o.paymentMethod, o.paymentStatus, o.orderStatus,
+                new Date(o.createdAt).toLocaleString('id-ID')
+            ]);
+
+            let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => `"${e.join('","')}"`).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const timestamp = new Date().toISOString().replace(/:/g, '-');
+            link.setAttribute("download", `laporan_bazaar_tim_${timestamp}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+        
+        // Fungsi untuk tombol Reset Data (menghapus semua data di Firestore)
+        resetDataBtn.addEventListener('click', () => { resetModal.classList.remove('hidden'); });
+        cancelResetBtn.addEventListener('click', () => { resetModal.classList.add('hidden'); });
+        
+        confirmResetBtn.addEventListener('click', async () => {
+            resetModal.classList.add('hidden');
+            console.log("Mulai mereset semua data...");
+            
+            // Nonaktifkan tombol agar tidak diklik lagi
+            confirmResetBtn.disabled = true;
+            confirmResetBtn.textContent = 'Menghapus...';
+
+            try {
+                // Buat array dari semua promise delete
+                const deletePromises = localOrders.map(order => {
+                    const docRef = doc(db, colPath, order.id);
+                    return deleteDoc(docRef);
+                });
+                
+                // Tunggu semua proses delete selesai
+                await Promise.all(deletePromises);
+                
+                console.log("Semua data berhasil dihapus.");
+                // onSnapshot akan otomatis memperbarui tampilan menjadi kosong
+            
+            } catch (error) {
+                console.error("Error mereset data:", error);
+                alert("Gagal mereset data. Cek koneksi internet.");
+            } finally {
+                // Aktifkan kembali tombol
+                confirmResetBtn.disabled = false;
+                confirmResetBtn.textContent = 'Ya, Hapus Semua';
+            }
+        });
+
+        // Pendaftaran Service Worker (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                // Pastikan path-nya benar sesuai nama repository Anda
+                navigator.serviceWorker.register('/BAZAR-PERCA-UH/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker PWA berhasil didaftarkan, scope: ', registration.scope);
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker PWA gagal didaftarkan: ', err);
+                    });
+            });
+        }
+        
+        // --- 4. MULAI APLIKASI ---
+        // Panggil fungsi login untuk memulai semuanya
+        initAuth();
+
     </script>
 </body>
 </html>
