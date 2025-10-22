@@ -1,79 +1,511 @@
-const CACHE_NAME = 'bazaar-kasir-cache-v1';
-// Daftar file yang akan disimpan di cache
-// Path ini HARUS sesuai dengan struktur repository GitHub Pages Anda
-const CACHE_FILES = [
-    '/BAZAR-PERCA-UH/', // Ini adalah index.html
-    '/BAZAR-PERCA-UH/manifest.json',
-    '/BAZAR-PERCA-UH/icon.png'
-    // Kita tidak meng-cache file script utama karena itu adalah modul
-    // dan kita tidak meng-cache resource dari cdn (tailwind, firebase)
-];
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi Kasir Bazaar (Tim)</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0284c7"/>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .new-item-animation { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        #loading-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #CBD5E1; /* slate-300 */
+            border-bottom-color: #0284C7; /* sky-600 */
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+        @keyframes rotation {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
 
-// Instalasi Service Worker: menyimpan file-file di atas ke cache
-self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME)
-            .then((cache) => {
-                console.log('ServiceWorker: Cache dibuka, menambahkan file...');
-                return cache.addAll(CACHE_FILES);
-            })
-            .catch(err => {
-                console.error('ServiceWorker: Gagal menambahkan file ke cache', err);
-            })
-    );
-});
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <p class="text-slate-600 font-medium">Menghubungkan ke database...</p>
+    </div>
 
-// Aktivasi Service Worker: membersihkan cache lama (jika ada)
-self.addEventListener('activate', (event) => {
-    event.waitUntil(
-        caches.keys().then((cacheNames) => {
-            return Promise.all(
-                cacheNames.map((cacheName) => {
-                    if (cacheName !== CACHE_NAME) {
-                        console.log('ServiceWorker: Menghapus cache lama', cacheName);
-                        return caches.delete(cacheName);
+    <div class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Aplikasi Kasir Bazaar (Tim)</h1>
+            <p class="text-slate-600 mt-2">Divisi Dana dan Usaha</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-lg self-start">
+                <h2 class="text-2xl font-semibold mb-6 border-b pb-3">Tambah Pesanan Baru</h2>
+                <form id="order-form" class="space-y-4">
+                    <div>
+                        <label for="customer-name" class="block text-sm font-medium text-slate-700">Nama Pemesan</label>
+                        <input type="text" id="customer-name" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Contoh: Budi" required>
+                    </div>
+                    <div>
+                        <label for="menu-name" class="block text-sm font-medium text-slate-700">Nama Menu</label>
+                        <input type="text" id="menu-name" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Contoh: Nasi Goreng" required>
+                    </div>
+                    <div>
+                        <label for="menu-price" class="block text-sm font-medium text-slate-700">Harga Menu (Rp)</label>
+                        <input type="number" id="menu-price" min="0" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Contoh: 15000" required>
+                    </div>
+                    <div>
+                        <label for="menu-quantity" class="block text-sm font-medium text-slate-700">Kuantitas</label>
+                        <input type="number" id="menu-quantity" value="1" min="1" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" required>
+                    </div>
+                    <div>
+                        <label for="payment-method" class="block text-sm font-medium text-slate-700">Metode Pembayaran</label>
+                        <select id="payment-method" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                            <option>Cash</option>
+                            <option>Transfer</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="payment-status" class="block text-sm font-medium text-slate-700">Status Pembayaran</label>
+                        <select id="payment-status" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm">
+                            <option>Belum Bayar</option>
+                            <option>Lunas</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="panitia-name" class="block text-sm font-medium text-slate-700">Nama Panitia (Admin)</label>
+                        <input type="text" id="panitia-name" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Contoh: Andi" required>
+                    </div>
+                    <button type="submit" id="submit-button" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 shadow-md">
+                        Tambah Pesanan
+                    </button>
+                </form>
+            </div>
+            
+            <div class="lg:col-span-3">
+                 <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-semibold mb-4">Daftar Pesanan (Real-time)</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">No.</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pemesan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Panitia</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Detail Pesanan</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Pembayaran</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-list" class="bg-white divide-y divide-slate-200">
+                                <tr id="empty-state">
+                                    <td colspan="8" class="px-4 py-8 text-center text-slate-500">Menghubungkan ke database...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg mt-8">
+                    <h2 class="text-2xl font-semibold mb-4">Laporan & Aksi</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-sky-100 p-4 rounded-lg">
+                            <p class="text-sm text-sky-800">Total Pesanan</p>
+                            <p id="total-orders" class="text-2xl font-bold text-sky-900">0</p>
+                        </div>
+                        <div class="bg-emerald-100 p-4 rounded-lg">
+                            <p class="text-sm text-emerald-800">Total Pemasukan (Lunas)</p>
+                            <p id="total-revenue" class="text-2xl font-bold text-emerald-900">Rp 0</p>
+                        </div>
+                    </div>
+                    
+                     <div class="mt-6">
+                        <button id="export-csv" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md flex items-center justify-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                            <span>Export Laporan ke Excel (CSV)</span>
+                        </button>
+                    </div>
+
+                    <div class="mt-8 pt-6 border-t border-slate-200">
+                        <h3 class="text-lg font-semibold text-red-700">Zona Berbahaya</h3>
+                        <p class="text-sm text-slate-600 mt-2 mb-4">Aksi di bawah ini bersifat permanen dan tidak dapat dibatalkan. Hati-hati.</p>
+                        <button id="reset-data" class="text-red-600 hover:bg-red-100 font-medium py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center space-x-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            <span>Reset Semua Data Database</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="reset-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center w-11/12 max-w-sm">
+            <h3 class="text-xl font-bold mb-4">Reset Semua Data?</h3>
+            <p class="text-sm text-slate-600 mb-6">Semua data pesanan di database akan dihapus permanen. Aksi ini membutuhkan password.</p>
+            
+            <div class="mt-4 text-left">
+                <label for="reset-password-input" class="block text-sm font-medium text-slate-700">Password Konfirmasi</label>
+                <input type="password" id="reset-password-input" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm placeholder-slate-400 focus:outline-none focus:ring-sky-500 focus:border-sky-500 sm:text-sm" placeholder="Masukkan password...">
+                <p id="reset-error-message" class="text-red-500 text-sm mt-1 h-4"></p> 
+            </div>
+
+            <div class="flex justify-center gap-4 mt-6"> 
+                <button id="cancel-reset" class="px-6 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg transition-colors">Batal</button>
+                <button id="confirm-reset" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">Ya, Hapus Semua</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="delete-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white p-8 rounded-lg shadow-xl text-center w-11/1S max-w-sm">
+            <h3 class="text-xl font-bold mb-4">Hapus Pesanan Ini?</h3>
+            <p class="text-sm text-slate-600 mb-6">Anda yakin ingin menghapus pesanan ini? Aksi ini tidak dapat dibatalkan.</p>
+            <div class="flex justify-center gap-4">
+                <button id="cancel-delete" class="px-6 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg transition-colors">Batal</button>
+                <button id="confirm-delete" class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { 
+            getFirestore, collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc, setLogLevel
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAk8bJp78FsDEyHWlzn1nAbRhGIYMIQXKY",
+          authDomain: "aplikasi-bazar-percauh.firebaseapp.com",
+          projectId: "aplikasi-bazar-percauh",
+          storageBucket: "aplikasi-bazar-percauh.appspot.com", 
+          messagingSenderId: "725305777021",
+          appId: "1:725305777021:web:dc5c6a39c32a80e0420a14",
+          measurementId: "G-T8SJL93HSL"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        const colPath = `orders`;
+        const ordersCollection = collection(db, colPath);
+
+        const orderForm = document.getElementById('order-form');
+        const orderList = document.getElementById('order-list');
+        const totalOrdersEl = document.getElementById('total-orders');
+        const totalRevenueEl = document.getElementById('total-revenue');
+        const exportCsvBtn = document.getElementById('export-csv');
+        const resetDataBtn = document.getElementById('reset-data');
+        const resetModal = document.getElementById('reset-modal');
+        const cancelResetBtn = document.getElementById('cancel-reset');
+        const confirmResetBtn = document.getElementById('confirm-reset');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        const emptyState = document.getElementById('empty-state');
+        const submitButton = document.getElementById('submit-button');
+        const deleteModal = document.getElementById('delete-modal');
+        const cancelDeleteBtn = document.getElementById('cancel-delete');
+        const confirmDeleteBtn = document.getElementById('confirm-delete');
+        
+        const resetPasswordInput = document.getElementById('reset-password-input');
+        const resetErrorMessage = document.getElementById('reset-error-message');
+        
+        let localOrders = []; 
+        let orderIdToDelete = null; 
+
+        async function initAuth() {
+            try {
+                await signInAnonymously(auth);
+                console.log("Firebase Auth berhasil. User:", auth.currentUser.uid);
+                loadRealtimeOrders();
+            } catch (error) {
+                console.error("Firebase Auth Gagal:", error);
+                loadingOverlay.innerHTML = '<p class="text-red-600 font-medium">Gagal terhubung ke database. Cek setelan Auth & Domain di Firebase.</p>';
+            }
+        }
+
+        function loadRealtimeOrders() {
+            onSnapshot(ordersCollection, (snapshot) => {
+                localOrders = []; 
+                orderList.innerHTML = ''; 
+                
+                if (snapshot.empty) {
+                    if (emptyState) {
+                         emptyState.innerHTML = `<td colspan="8" class="px-4 py-8 text-center text-slate-500">Belum ada pesanan yang masuk.</td>`;
+                         if (!orderList.contains(emptyState)) {
+                            orderList.appendChild(emptyState);
+                         }
+                    } else {
+                         orderList.innerHTML = `<tr><td colspan="8" class="px-4 py-8 text-center text-slate-500">Belum ada pesanan yang masuk.</td></tr>`;
                     }
-                })
-            );
-        })
-    );
-});
+                } else {
+                    if(emptyState) emptyState.remove();
 
-// Fetch (Pengambilan) Event:
-// Ini adalah strategi "Cache first, falling back to network"
-// TAPI, kita harus MENGABAIKAN request ke Firebase/Firestore
-self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
+                    const docs = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
+                    
+                    const validDocs = docs.filter(doc => doc.hasOwnProperty('menuName') && doc.hasOwnProperty('createdAt'));
 
-    // --- PENTING ---
-    // Jangan cache request ke API Firebase atau Google.
-    // Biarkan request ini langsung ke network.
-    if (url.hostname.includes('firebase') || url.hostname.includes('googleapis.com')) {
-        // Biarkan request ini berjalan seperti biasa (network)
-        return;
-    }
+                    validDocs.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                    
+                    let orderNumber = 1;
+                    validDocs.forEach(order => {
+                        localOrders.push(order); 
+                        
+                        const row = document.createElement('tr');
+                        row.className = 'new-item-animation';
+                        
+                        const paymentStatusClass = order.paymentStatus === 'Lunas' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                        const orderStatusClass = order.orderStatus === 'Selesai' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
 
-    // Untuk semua request lainnya (HTML, manifest, icon)
-    event.respondWith(
-        caches.match(event.request)
-            .then((response) => {
-                // Jika file ditemukan di cache, kembalikan dari cache
-                if (response) {
-                    return response;
+                        row.innerHTML = `
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-slate-900">${orderNumber++}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700">${order.customerName}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-700">${order.panitiaName || '-'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-slate-500">
+                                <div class="font-medium text-slate-800">${order.menuName}</div>
+                                <div>${order.menuQuantity} x ${formatRupiah(order.menuPrice)}</div>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold text-slate-900">${formatRupiah(order.total)} <span class="text-xs font-normal text-slate-500">(${order.paymentMethod})</span></td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                <button data-id="${order.id}" class="toggle-payment-btn w-24 text-center px-2 py-1 text-xs font-semibold rounded-full ${paymentStatusClass}">${order.paymentStatus}</button>
+
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                <button data-id="${order.id}" class="toggle-order-btn w-24 text-center px-2 py-1 text-xs font-semibold rounded-full ${orderStatusClass}">${order.orderStatus}</button>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm">
+                                <button data-id="${order.id}" class="delete-btn text-red-500 hover:text-red-700">Hapus</button>
+                            </td>
+                        `;
+                        orderList.appendChild(row);
+                    });
+                }
+                updateSummary();
+                loadingOverlay.classList.add('hidden');
+            }, (error) => {
+                console.error("Gagal mendengarkan data pesanan (Firestore Rules?):", error);
+                loadingOverlay.innerHTML = '<p class="text-red-600 font-medium">Gagal memuat data. Cek "Rules" Firestore Anda.</p>';
+            });
+        }
+
+        orderForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            submitButton.disabled = true;
+            submitButton.textContent = 'Menyimpan...';
+
+            const newOrder = {
+                customerName: document.getElementById('customer-name').value,
+                panitiaName: document.getElementById('panitia-name').value,
+                menuName: document.getElementById('menu-name').value,
+                menuPrice: parseFloat(document.getElementById('menu-price').value),
+                menuQuantity: parseInt(document.getElementById('menu-quantity').value),
+                total: parseFloat(document.getElementById('menu-price').value) * parseInt(document.getElementById('menu-quantity').value),
+                paymentMethod: document.getElementById('payment-method').value,
+                paymentStatus: document.getElementById('payment-status').value,
+                orderStatus: 'Diproses',
+                createdAt: Date.now() 
+            };
+
+            try {
+                await addDoc(ordersCollection, newOrder);
+                orderForm.reset();
+                document.getElementById('menu-quantity').value = 1;
+            } catch (error) {
+                console.error("Error menambah pesanan:", error);
+                alert("Gagal menambah pesanan. Cek koneksi internet.");
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Tambah Pesanan';
+            }
+        });
+
+        orderList.addEventListener('click', async (e) => {
+            const id = e.target.dataset.id;
+            if (!id) return; 
+
+            const docRef = doc(db, colPath, id);
+            
+            try {
+                if (e.target.classList.contains('toggle-payment-btn')) {
+                    const currentOrder = localOrders.find(o => o.id === id);
+                    const newStatus = currentOrder.paymentStatus === 'Lunas' ? 'Belum Bayar' : 'Lunas';
+                    await updateDoc(docRef, { paymentStatus: newStatus });
                 }
                 
-                // Jika tidak ada di cache, coba ambil dari network
-                return fetch(event.request)
-                    .then((networkResponse) => {
-                        // (Opsional) Kita bisa simpan response baru ini ke cache
-                        // Tapi untuk file utama kita, kita sudah cache saat install
-                        return networkResponse;
+                if (e.target.classList.contains('toggle-order-btn')) {
+                    const currentOrder = localOrders.find(o => o.id === id);
+                    const newStatus = currentOrder.orderStatus === 'Selesai' ? 'Diproses' : 'Selesai';
+                    await updateDoc(docRef, { orderStatus: newStatus });
+                }
+                
+                if (e.target.classList.contains('delete-btn')) {
+                    orderIdToDelete = id; 
+                    deleteModal.classList.remove('hidden'); 
+                }
+            } catch (error) {
+                console.error("Gagal update dokumen:", error);
+                alert("Gagal melakukan aksi. Cek koneksi internet.");
+            }
+        });
+        
+        function formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+        }
+        
+        function updateSummary() {
+            totalOrdersEl.textContent = localOrders.length;
+            const totalRevenue = localOrders
+                .filter(order => order.paymentStatus === 'Lunas')
+                .reduce((sum, order) => sum + order.total, 0);
+            totalRevenueEl.textContent = formatRupiah(totalRevenue);
+        }
+
+        exportCsvBtn.addEventListener('click', () => {
+            if (localOrders.length === 0) {
+                alert('Tidak ada data pesanan untuk di-export.');
+                return;
+            }
+            const headers = ['No Pesanan', 'Nama Pemesan', 'Nama Panitia', 'Nama Menu', 'Harga Satuan', 'Kuantitas', 'Total Harga', 'Metode Pembayaran', 'Status Pembayaran', 'Status Pesanan', 'Waktu Dibuat'];
+            
+            const sortedOrders = [...localOrders].sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+            
+            const rows = sortedOrders.map((o, index) => [
+                index + 1, 
+                o.customerName, 
+                o.panitiaName || '', 
+                o.menuName, 
+                o.menuPrice, 
+                o.menuQuantity, 
+                o.total, 
+                o.paymentMethod, 
+                o.paymentStatus, 
+                o.orderStatus,
+                new Date(o.createdAt).toLocaleString('id-ID')
+            ]);
+
+            let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => `"${e.join('","')}"`).join("\n");
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const timestamp = new Date().toISOString().replace(/:/g, '-');
+            link.setAttribute("download", `laporan_bazaar_tim_${timestamp}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+        
+        resetDataBtn.addEventListener('click', () => {
+            resetPasswordInput.value = ''; 
+            resetErrorMessage.textContent = ''; 
+            resetModal.classList.remove('hidden'); 
+        });
+
+        cancelResetBtn.addEventListener('click', () => { 
+            resetModal.classList.add('hidden'); 
+            resetPasswordInput.value = ''; 
+            resetErrorMessage.textContent = ''; 
+        });
+        
+        confirmResetBtn.addEventListener('click', async () => {
+            const password = resetPasswordInput.value;
+
+            if (password !== "Akil Ganteng") {
+                resetErrorMessage.textContent = 'Password salah. Coba lagi.';
+                return; 
+            }
+
+            resetErrorMessage.textContent = ''; 
+            resetModal.classList.add('hidden'); 
+            console.log("Mulai mereset semua data...");
+            
+            confirmResetBtn.disabled = true;
+            confirmResetBtn.textContent = 'Menghapus...';
+
+            try {
+                const deletePromises = localOrders.map(order => {
+                    const docRef = doc(db, colPath, order.id);
+                    return deleteDoc(docRef);
+                });
+                
+                await Promise.all(deletePromises);
+                
+                console.log("Semua data berhasil dihapus.");
+            
+            } catch (error) {
+                console.error("Error mereset data:", error);
+                alert("Gagal mereset data. Cek koneksi internet.");
+            } finally {
+                confirmResetBtn.disabled = false;
+                confirmResetBtn.textContent = 'Ya, Hapus Semua';
+                resetPasswordInput.value = ''; 
+            }
+        });
+
+        cancelDeleteBtn.addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+            orderIdToDelete = null; 
+        });
+
+        confirmDeleteBtn.addEventListener('click', async () => {
+            if (!orderIdToDelete) return; 
+
+            confirmDeleteBtn.disabled = true;
+            confirmDeleteBtn.textContent = 'Menghapus...';
+            
+            const docRef = doc(db, colPath, orderIdToDelete);
+            
+            try {
+                await deleteDoc(docRef); 
+                console.log("Dokumen berhasil dihapus:", orderIdToDelete);
+            } catch (error) {
+                console.error("Gagal menghapus dokumen:", error);
+                alert("Gagal menghapus pesanan. Cek koneksi internet.");
+            } finally {
+                deleteModal.classList.add('hidden');
+                orderIdToDelete = null;
+                confirmDeleteBtn.disabled = false;
+                confirmDeleteBtn.textContent = 'Ya, Hapus';
+            }
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/BAZAR-PERCA-UH/sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker PWA berhasil didaftarkan, scope: ', registration.scope);
                     })
-                    .catch(() => {
-                        console.error('ServiceWorker: Gagal mengambil dari network', event.request.url);
-                        // Anda bisa menampilkan halaman offline custom di sini jika mau
+                    .catch(err => {
+                        console.log('ServiceWorker PWA gagal didaftarkan: ', err);
                     });
-            })
-    );
-});
+            });
+        }
+        
+        initAuth();
+
+    </script>
+</body>
+</html>
 
